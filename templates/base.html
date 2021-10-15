@@ -55,21 +55,26 @@
       <div id="log">
       </div>
     </div><!-- /.container -->
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript">
-      $(document).ready(function () {
-          namespace = '/test'; // change to an empty string to use the global namespace
-          var uri = 'https://' + document.domain  + namespace;
-          console.log(uri);
-          var socket = io.connect(uri);
-      
-          socket.on('user', function(msg) {
-              console.log(msg);
-              var user = msg.data;
+      $(document).ready(function () {        
+          var uri = 'http://' + document.domain + ':8080';
+
+          const Http = new XMLHttpRequest();
+          const url=uri + '/scim/v2/Users';
+          Http.open("GET", url);
+          Http.send();
+
+          Http.onreadystatechange = (e) => {
+            console.log(Http.responseText)
+            const obj = JSON.parse(Http.responseText)
+            console.log(obj)
+
+            obj.Resources.forEach(user => {
+              console.log(user);
               var user_element = '#' + user.id
               var userRow = '<tr id="' + user.id + '"><td>' + user.id + '</td><td>' + user.name.givenName + '</td><td>' + user.name.familyName + '</td><td>' + user.userName + '</td></tr>';
               if($(user_element).length && user.active) {
-                  $(user_element).replaceWith(userRow);
+                $(user_element).replaceWith(userRow);
               } else if (user.active) {
                   $('#users-table').append(userRow);
               }
@@ -80,7 +85,8 @@
               if($(user_element).length && !user.active) {
                   $(user_element).hide();
               }
-          });
+              }) 
+          }
       });
     </script>
     <!-- Placed at the end of the document so the pages load faster -->

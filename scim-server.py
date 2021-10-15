@@ -29,8 +29,6 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask_socketio import SocketIO
-from flask_socketio import emit
 from flask_sqlalchemy import SQLAlchemy
 import flask
 
@@ -40,8 +38,6 @@ database_url = os.getenv('DATABASE_URL', 'sqlite:///test-users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
-
 
 class ListResponse():
     def __init__(self, list, start_index=1, count=None, total_results=0):
@@ -132,17 +128,6 @@ def render_json(obj):
     rv = obj.to_scim_resource()
     send_to_browser(rv)
     return flask.jsonify(rv)
-
-
-@socketio.on('connect', namespace='/test')
-def test_connect():
-    for user in User.query.filter_by(active=True).all():
-        emit('user', {'data': user.to_scim_resource()})
-
-
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    print('Client disconnected')
 
 
 @app.route('/')
@@ -251,4 +236,4 @@ if __name__ == "__main__":
     except:
         db.create_all()
     # app.debug = True
-    socketio.run(app, host='0.0.0.0')
+    app.run(host='0.0.0.0', port=8080)
