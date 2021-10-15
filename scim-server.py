@@ -117,16 +117,8 @@ def scim_error(message, status_code=500):
     return flask.jsonify(rv), status_code
 
 
-def send_to_browser(obj):
-    socketio.emit('user',
-                  {'data': obj},
-                  broadcast=True,
-                  namespace='/test')
-
-
 def render_json(obj):
     rv = obj.to_scim_resource()
-    send_to_browser(rv)
     return flask.jsonify(rv)
 
 
@@ -152,7 +144,6 @@ def users_post():
     db.session.add(user)
     db.session.commit()
     rv = user.to_scim_resource()
-    send_to_browser(rv)
     resp = flask.jsonify(rv)
     resp.headers['Location'] = url_for('user_get',
                                        user_id=user.userName,
